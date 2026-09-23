@@ -1,8 +1,8 @@
 extern "C" {
-    #include "can2040.h"
-    #include "pico/stdlib.h"
-    #include <stdio.h>
-    #include <stddef.h>
+#include "can2040.h"
+#include "pico/stdlib.h"
+#include <stddef.h>
+#include <stdlib.h>
 }
 
 #include "board_bootloader.h"
@@ -21,7 +21,7 @@ constexpr bool startup_blink_sequence[] = {
 constexpr size_t startup_blink_sequence_len = sizeof startup_blink_sequence / sizeof *startup_blink_sequence;
 
 void blink_startup_status();
-void blink_error_status();
+void blink_error_status(int32_t error_code);
 
 void board_bootloader_loop()
 {
@@ -32,6 +32,8 @@ void board_bootloader_loop()
 
     blink_startup_status();
     blink_error_status();
+
+    blink_error_status(BOOTROM_OK);
 }
 
 void blink_startup_status()
@@ -43,9 +45,32 @@ void blink_startup_status()
     }
 }
 
-void blink_error_status()
+void blink_error_status(int32_t error_code)
 {
     bool status = false;
+    size_t blink_count = abs(error_code) * 2;
+
+    for (size_t i = 0; i < 40; ++i)
+    {
+        gpio_put(status_blink_pin, status);
+        sleep_ms(status_error_blink_sleep_time_ms);
+
+        status = !status;
+    }
+
+    gpio_put(status_blink_pin, false);
+    sleep_ms(1000);
+
+    for (size_t i = 0; i < blink_count; ++i)
+    {
+        gpio_put(status_blink_pin, status);
+        sleep_ms(status_blink_sleep_time_ms);
+
+        status = !status;
+    }
+
+    gpio_put(status_blink_pin, false);
+    sleep_ms(1000);
 
     while (true)
     {
