@@ -34,12 +34,6 @@ target_link_libraries(can2040
     hardware_pio
 )
 
-# add libraries
-add_subdirectory(lib/pico_neopixels)
-add_subdirectory(lib/led)
-add_subdirectory(lib/barometer)
-add_subdirectory(lib/guppy_lib)
-
 # add stuff from modules folder
 file(GLOB MODULE_SOURCES
     src/modules/*.c
@@ -57,10 +51,6 @@ function(add_board BOARD_NAME BOARD_TYPE)
     target_link_libraries(${BOARD_NAME}
         pico_stdlib
         can2040
-        guppy_lib
-        pico_neopixel
-        led_strip
-        barometer
     )
 
     target_compile_definitions(${BOARD_NAME} PRIVATE BOARD_TYPE=${BOARD_TYPE})
@@ -70,10 +60,6 @@ function(add_board BOARD_NAME BOARD_TYPE)
 
 endfunction()
 
-add_board(board_motor 1)
-add_board(board_wet 2)
-add_board(board_test -1)
+add_board(board_bootloader -2)
 
-pico_add_extra_outputs(board_motor)
-pico_add_extra_outputs(board_wet)
-pico_add_extra_outputs(board_test)
+pico_add_extra_outputs(board_bootloader)
