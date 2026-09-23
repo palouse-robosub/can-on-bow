@@ -46,9 +46,6 @@ file(GLOB MODULE_SOURCES
     src/modules/*.cpp
 )
 
-set(LINKER_SCRIPT_OVERRIDE_PATH "${CMAKE_SOURCE_DIR}/linker_script_overrides")
-set(LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/modified.lds")
-
 function(add_board BOARD_NAME BOARD_TYPE)
 
     add_executable(${BOARD_NAME}
@@ -67,10 +64,6 @@ function(add_board BOARD_NAME BOARD_TYPE)
     )
 
     target_compile_definitions(${BOARD_NAME} PRIVATE BOARD_TYPE=${BOARD_TYPE})
-
-    target_link_options(${BOARD_NAME} PUBLIC --verbose)
-    pico_add_linker_script_override_path(${BOARD_NAME} ${LINKER_SCRIPT_OVERRIDE_PATH})
-    #target_link_options(${BOARD_NAME} PUBLIC -T ${LINKER_SCRIPT} --verbose)
 
     pico_enable_stdio_usb(${BOARD_NAME} 1)
     pico_enable_stdio_uart(${BOARD_NAME} 0)
