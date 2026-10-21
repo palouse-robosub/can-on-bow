@@ -1,0 +1,40 @@
+{
+  "unpartitioned": {
+    "families": [
+      "absolute"
+    ],
+    "permissions": {
+      "secure": "rw",
+      "nonsecure": "rw",
+      "bootloader": "rw"
+    }
+  },
+  "partitions": [
+    {
+      "name": "Guppy Bootloader",
+      "id": "0xB007",
+      "size": "1024K",
+      "families": [
+        "rp2350-arm-s"
+      ],
+      "permissions": {
+        "secure": "rw",
+        "nonsecure": "rw",
+        "bootloader": "rw"
+      }
+    },
+    {
+      "name": "Guppy Embedded",
+      "id": "0x0000EBDD",
+      "size": "1024K",
+      "families": [
+        "rp2350-arm-s"
+      ],
+      "permissions": {
+        "secure": "rw",
+        "nonsecure": "rw",
+        "bootloader": "rw"
+      }
+    }
+  ]
+}
