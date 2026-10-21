@@ -14,6 +14,9 @@ extern "C" {
 #include <hardware/flash.h>
 #include <pico/assert.h>
 
+extern unsigned char hello_world_bin[];
+extern unsigned int hello_world_bin_len;
+
 /*
  * Information given by get_partition_table_info with flag
  * PT_INFO_PARTITION_LOCATION_AND_FLAGS in first word. Second word
@@ -68,7 +71,6 @@ void board_bootloader_loop()
     puts("Hello bootloader");
 
     blink_startup_status();
-    blink_error_status();
 
     error_code = rom_load_partition_table(pt_workarea, pt_workarea_size, false);
 
@@ -138,7 +140,50 @@ void board_bootloader_loop()
     printf("Partition 1 secure R/W Perms: %d%d\n", part1_info.secure_readable, part1_info.secure_writable);
     printf("Partition 1 non-secure R/W Perms: %d%d\n", part1_info.nonsecure_readable, part1_info.nonsecure_writable);
 
-    blink_error_status(BOOTROM_OK);
+    // From the RP2350 datasheet section on rom_flash_op (section 5.4.8.9)
+    // Typical sequence for erasing:
+    // - rom_connect_internal_flash
+    // - rom_flash_exit_xip
+    // - rom_flash_op
+    // - rom_flash_flush_cache
+
+    // Maybe these two could be omitted because we're not changing anything from defaults? Better safe than sorry
+    rom_connect_internal_flash();
+    rom_flash_exit_xip();
+
+    cflash_flags flash_flags = { 0 };
+    flash_flags.flags |= CFLASH_OP_VALUE_ERASE << CFLASH_OP_LSB; // Program ops must have erase before
+    flash_flags.flags |= CFLASH_ASPACE_VALUE_STORAGE << CFLASH_ASPACE_LSB;
+    flash_flags.flags |= CFLASH_SECLEVEL_VALUE_SECURE << CFLASH_SECLEVEL_LSB; // TODO: Security level?
+
+    size_t part1_length = part1_end_addr - part1_start_addr;
+
+    printf("Erasing partition 1 of size 0x%zx\n", part1_length);
+
+    // We're working with actual flash storage addresses (ie. NO ADDRESS TRANSLATION)
+    // HOWEVER, we need to give flash_op addresses starting from XIP_BASE (this is where QMI lives on RP2350)
+    error_code = rom_flash_op(flash_flags, XIP_BASE + part1_start_addr, part1_length, nullptr);
+
+    hard_assert(error_code == BOOTROM_OK);
+    puts("Finished erasing partition 1");
+
+    flash_flags.flags = 0;
+    flash_flags.flags |= CFLASH_OP_VALUE_PROGRAM << CFLASH_OP_LSB;
+    flash_flags.flags |= CFLASH_ASPACE_VALUE_STORAGE << CFLASH_ASPACE_LSB;
+    flash_flags.flags |= CFLASH_SECLEVEL_VALUE_SECURE << CFLASH_SECLEVEL_LSB; // TODO: Security level?
+
+    rom_flash_flush_cache();
+
+    printf("Flashing partition 1 with binary size 0x%x\n", hello_world_bin_len);
+
+    error_code = rom_flash_op(flash_flags, XIP_BASE + part1_start_addr, hello_world_bin_len, hello_world_bin);
+
+    assert(error_code == BOOTROM_OK);
+    puts("Flashed successfully");
+
+    rom_flash_flush_cache();
+    puts("Flushed cache");
+
     blink_error_status(0);
 }
 
