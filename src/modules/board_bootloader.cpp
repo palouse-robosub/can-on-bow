@@ -54,6 +54,9 @@ constexpr size_t startup_blink_sequence_len = sizeof startup_blink_sequence / si
 constexpr size_t pt_workarea_size = 4096;
 static uint8_t pt_workarea[pt_workarea_size];
 
+constexpr size_t chimage_workarea_size = 4096;
+static uint8_t chimage_workarea[chimage_workarea_size];
+
 void blink_startup_status();
 void blink_error_status(int32_t error_code);
 
@@ -183,6 +186,16 @@ void board_bootloader_loop()
 
     rom_flash_flush_cache();
     puts("Flushed cache");
+
+    puts("Chaining into program");
+
+    sleep_ms(500);
+
+    error_code = rom_chain_image(chimage_workarea, chimage_workarea_size, XIP_BASE + part1_start_addr, part1_length);
+
+    hard_assert(error_code == BOOTROM_OK);
+
+    puts("Goodbye");
 
     blink_error_status(0);
 }
