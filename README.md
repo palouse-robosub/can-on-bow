@@ -80,32 +80,38 @@ picotool partition create partition_table.json partition_table.uf2
 
 ## Flashing
 
-When flashing, plug the board into your computer. Next, either put the microcontroller into BOOTSEL mode by holding
-down the BOOT and RST buttons, or force it into BOOTSEL mode by using the `-f` flag with picotool. Then flash the
-device using `picotool load`. Note, flashing the board by treating it as a storage device _cannot be done_ when
+When flashing, first plug the board into your computer. Then, flash the device using `picotool load` with the `-f` flag to force
+the device into BOOTSEL mode. Note, flashing the board by treating it as a storage device _cannot be done_ when
 using partition tables, use picotool instead.
 
-When using CANonBow, the RP2350 needs to be flashed in three steps.
+### Manually Entering BOOTSEL Mode
 
-### Flashing the Partition Table
+As a fallback, the RP2350 can manually be put into BOOTSEL mode using the BOOT and RST buttons. Hold down both RST and BOOT, then
+release RST and BOOT, in that order. If BOOT is released before RST, the board will not enter BOOTSEL mode. 
+
+### CANonBow Flash Steps
+
+While using CANonBow, the RP2350 needs to be flashed in three steps.
+
+#### Flashing the Partition Table
 
 First the partition table needs to be flashed:
 ```sh
-picotool load [-f] partition_table.uf2
+picotool load -f partition_table.uf2
 ```
 
-### Flashing the Bootloader
+#### Flashing the Bootloader
 
 Next flash the CANonBow into the first partition. The partition loaded into is selected using the `-p` flag.
 ```sh
-picotool load [-f] -p 0 board_bootloader.uf2
+picotool load -f -p 0 board_bootloader.uf2
 ```
 
-### Flashing Guppy Embedded
+#### Flashing Guppy Embedded
 
 The program partition can be flashed using picotool as well:
 ```sh
-picotool load [-f] -p 1 board_[board_name].uf2
+picotool load -f -p 1 board_[board_name].uf2
 ```
 
 Note that currently the bootloader will always overwrite this with a hello world program stored inside the bootloader.
@@ -116,12 +122,12 @@ If you want to stop using CANonBow, you'll need to overwrite the partition table
 the flash before flashing, or using the `--ignore-partitions` option while flashing.
 
 ```sh
-picotool erase [-f] -a
-picotool load [-f] board_[board_name].uf2
+picotool erase -f -a
+picotool load -f board_[board_name].uf2
 ```
 or
 ```sh
-picotool load [-f] --ignore-partitions board_[board_name].uf2
+picotool load -f --ignore-partitions board_[board_name].uf2
 ```
 
 ## Resources
