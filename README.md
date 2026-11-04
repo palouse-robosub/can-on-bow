@@ -85,7 +85,7 @@ down the BOOT and RST buttons, or force it into BOOTSEL mode by using the `-f` f
 device using `picotool load`. Note, flashing the board by treating it as a storage device _cannot be done_ when
 using partition tables, use picotool instead.
 
-When using CANonBoot, the RP2350 needs to be flashed in three steps.
+When using CANonBow, the RP2350 needs to be flashed in three steps.
 
 ### Flashing the Partition Table
 
